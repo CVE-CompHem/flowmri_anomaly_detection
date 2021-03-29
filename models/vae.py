@@ -208,8 +208,8 @@ class VAEModel():
         model_folder = os.path.join(self.log_dir, model_name)
         self.saver.restore(self.sess, model_folder + '/' + model_name + ".ckpt-" + str(step))
 
-    def load_from_path(self, path, model_name, step):
-        self.saver.restore(self.sess, path + '/' + model_name + ".ckpt-" + str(step))
+    def load_from_path(self, path):
+        self.saver.restore(self.sess, path)
 
     def sample(self):
         """

@@ -18,7 +18,7 @@
     "nlabels": 2,
 
     "max_iterations": 2001,
-    "batch_size": 8,
+    "batch_size": 1,
     "learning_rate": 0.001,
     "da_ratio": 0.0,
     "optimizer_handle": "tf.train.AdamOptimizer",
