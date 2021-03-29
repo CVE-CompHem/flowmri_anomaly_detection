@@ -10,7 +10,7 @@ def iterate_minibatches(images
                         ,batch_size
                         ,data_augmentation=False):
     '''
-    Author: Neerav Kharani, extended by Pol Peiffer
+    Author: Neerav Karani, extended by Pol Peiffer
 
     Function to create mini batches from the dataset of a certain batch size
     :param images: numpy dataset
