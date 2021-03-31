@@ -42,22 +42,19 @@ logging.info('Logging directory: %s' %log_dir)
 # input: image with shape  ---> [nx, ny, nz, nt, 4]
 # output: segmentation probability of the aorta with shape  ---> [nx, ny, nz, nt]
 # ============================================================================
-def get_anomaly_probability(test_image,
-                            images_pl,
-                            training_pl,
-                            seg_prob_op,
-                            sess):
+def get_vae_recon(test_image,
+                  model):
         
-    # create an empty array to store the predicted segmentation probabilities
-    predicted_seg_prob_aorta = np.zeros((test_image.shape[:-1]))
+    # create an empty array to store the VAE recon
+    recon = np.zeros((test_image.shape))
     
-    # predict the segmentation one zz slice at a time
+    # predict the segmentation 8 zz slices at a time (this is the batch size parameter in the config file)
     for zz in range(test_image.shape[2]):
-        predicted_seg_prob = sess.run(seg_prob_op, feed_dict = {images_pl: np.expand_dims(test_image[:,:,zz,:,:], axis=0), training_pl: False})
-        predicted_seg_prob = np.squeeze(predicted_seg_prob) # squeeze out the added batch dimension
-        predicted_seg_prob_aorta[:,:,zz,:] = predicted_seg_prob[:, :, :, 1] # the prob. of the FG is in the second channel
+        feed_dict = {model.image_matrix: np.expand_dims(test_image[:,:,zz,:,:], 0)}
+        out_mu = model.sess.run(model.decoder_output, feed_dict)
+        recon[:,:,zz,:,:] = np.squeeze(out_mu)
         
-    return predicted_seg_prob_aorta
+    return recon
 
 # ==================================================================
 # main function for inference
@@ -101,8 +98,8 @@ def run_inference():
     # crop / pad to common size
     orig_volume_size = segmentedflow_mri_image.shape[0:4]
     common_volume_size = [112, 112, 24, 24]
-    segmentedflow_mri_image = utils.crop_or_pad_4dvol(segmentedflow_mri_image, common_volume_size)
-    logging.info('shape of the test image after cropping / padding: ' + str(segmentedflow_mri_image.shape))
+    segmentedflow_mri_image_cropped = utils.crop_or_pad_4dvol(segmentedflow_mri_image, common_volume_size)
+    logging.info('shape of the test image after cropping / padding: ' + str(segmentedflow_mri_image_cropped.shape))
         
     # ============================
     # build the TF graph
@@ -124,39 +121,25 @@ def run_inference():
         # ============================
         # predict the segmentation probability for the image
         # ============================        
-        # create an empty array to store the predicted anomaly probabilities
-        recon_error = np.zeros((segmentedflow_mri_image.shape))
-        
-        # predict the segmentation 8 zz slices at a time (this is the batch size parameter in the config file)
-        for zz in range(segmentedflow_mri_image.shape[2]):
-            feed_dict = {model.image_matrix: np.expand_dims(segmentedflow_mri_image[:,:,zz,:,:], 0)}
-            out_mu = model.sess.run(model.decoder_output, feed_dict)
-            recon_error[:,:,zz,:,:] = segmentedflow_mri_image[:,:,zz,:,:] - np.squeeze(out_mu)
-
-        logging.info('shape of reconstruction error: ' + str(recon_error.shape))
+        reconstructed_image = get_vae_recon(segmentedflow_mri_image_cropped, model)
+        logging.info('shape of reconstruction image: ' + str(reconstructed_image.shape))
 
         # ============================
         # crop / pad back to the original dimensions
         # ============================
-        recon_error = utils.crop_or_pad_4dvol(recon_error, orig_volume_size)
-        logging.info('shape of reconstruction error after cropping back to original size: ' + str(recon_error.shape))
+        reconstructed_image = utils.crop_or_pad_4dvol(reconstructed_image, orig_volume_size)
+        logging.info('shape of reconstruction error after cropping back to original size: ' + str(reconstructed_image.shape))
         
-        # ============================
-        # compute rmse along the channel direction
-        # ============================
-        recon_error_rmse_along_channel = np.sqrt(np.sum(np.square(recon_error), -1))
-        logging.info('shape of reconstruction error rmse along channel direction: ' + str(recon_error_rmse_along_channel.shape))
-
         # ============================
         # create an instance of the SegmentedFlowMRI class, with the image information from flow_mri as well as the predicted anomaly probabilities
         # ============================
         anomalous_flow_mri = SegmentedFlowMRI(segmentedflow_mri.geometry,
                                               segmentedflow_mri.time,
                                               segmentedflow_mri.time_heart_cycle_period,
-                                              segmentedflow_mri.intensity,
-                                              segmentedflow_mri.velocity_mean,
+                                              reconstructed_image[:,:,:,:,0],
+                                              reconstructed_image[:,:,:,:,1:4],
                                               segmentedflow_mri.velocity_cov,
-                                              recon_error_rmse_along_channel)
+                                              segmentedflow_mri.segmentation_prob)
 
         # ============================
         # write SegmentedFlowMRI to file
