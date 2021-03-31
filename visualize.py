@@ -22,19 +22,17 @@ def norm(x,y,z):
 basepath = '/usr/bmicnas01/data-biwi-01/nkarani/projects/hpc_predict/data/eth_ibt/flownet/pollux/all_data/'
 
 # plot
-R_values = [6] # undersampling ratio
+p_or_v = 'v' # patient or volunteer
+R_values = [8] # undersampling ratio
 for subnum in [4]: # subject number (change this for plotting patient results)
 
     for r in range(len(R_values)):
 
         R = R_values[r]
         
-        if R == 6:
-            imagepath = basepath + 'v' + str(subnum) + '_R' + str(1) + '.h5'
-        else:
-            imagepath = basepath + 'v' + str(subnum) + '_R' + str(R) + '.h5'
-        segmentationpath = basepath + 'v' + str(subnum) + '_seg_rw.h5'
-        anomalypath = basepath + 'v' + str(subnum) + '_R' + str(R) + '_anomaly.h5'
+        imagepath = basepath + str(p_or_v) + str(subnum) + '_R' + str(R) + '.h5'
+        segmentationpath = basepath + str(p_or_v) + str(subnum) + '_R' + str(R) + '_seg_cnn.h5'
+        anomalypath = basepath + str(p_or_v) + str(subnum) + '_R' + str(R) + '_anomaly.h5'
             
         # read the flownet image
         flow_mri = FlowMRI.read_hdf5(imagepath)
@@ -86,8 +84,7 @@ for subnum in [4]: # subject number (change this for plotting patient results)
             plt.savefig(basepath + 'tmp/pngs' + str(idx) + '.png')
             plt.close()
             
-            
         _gif = []
         for idx in range(19):
             _gif.append(imageio.imread(basepath + 'tmp/pngs' + str(idx) + '.png'))
-        imageio.mimsave(basepath + 'v' + str(subnum) + '_R' + str(R) + '_anomaly_threshold' + str(threshold) + '.gif', _gif, format='GIF', duration=0.75)
+        imageio.mimsave(basepath + str(p_or_v) + str(subnum) + '_R' + str(R) + '_anomaly_threshold' + str(threshold) + '.gif', _gif, format='GIF', duration=0.75)
