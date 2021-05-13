@@ -1,0 +1,34 @@
+{
+    "model_name": "vae3d_masked_run1",
+    "run_number": 1,
+
+    "data_mode": "3D",
+    "image_size": [
+        112, 
+        112, 
+        24 
+    ],
+    "latent_size": [
+        7, 
+        7, 
+        3 
+    ],
+    
+    "nchannels": 4,
+    "nlabels": 2,
+
+    "max_iterations": 2001,
+    "batch_size": 1,
+    "learning_rate": 0.001,
+    "da_ratio": 0.0,
+    "optimizer_handle": "tf.train.AdamOptimizer",
+    "loss_type": "dice",
+    "summary_writing_frequency": 50,
+    "train_eval_frequency": 200,
+    "val_eval_frequency": 200,
+    "save_frequency": 200,
+    
+    "continue_run": false,
+    "debug": false,
+    "augment_data": false
+}

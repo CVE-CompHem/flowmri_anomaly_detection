@@ -9,10 +9,16 @@ from pdb import set_trace as bp
 
 
 class VAEModel():
-    def __init__(self, model, config, model_name, log_dir):
+    
+    def __init__(self,
+                 model,
+                 config,
+                 model_name,
+                 log_dir):
+        
         self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
         self.model = model()
-        self.model.__init__(model_name, image_size = config["spatial_size_x"])
+        self.model.__init__(model_name, image_size = config.image_size[0])
         self.weight = tf.placeholder("float32", name='kl_weight')
         self.model_name = model_name
         self.config = config
@@ -33,16 +39,18 @@ class VAEModel():
         # =================================================================================
         # ============== MODEL STRUCTURE TRAIN ============================================
         # =================================================================================
-
         # Input image - Dimensions: x, y, t, 4 channels
         self.image_matrix = tf.placeholder('float32',
-                                           [self.config["batch_size"], self.config["spatial_size_x"],
-                                            self.config["spatial_size_y"], self.config["spatial_size_t"], 4],
-                                           name='input')
+                                           [self.config.batch_size,
+                                            self.config.image_size[0],
+                                            self.config.image_size[1],
+                                            self.config.image_size[2], 4],
+                                            name='input')
 
         # Run encoder network and get the latent space distribution
         self.z_mean, self.z_std, self.res = self.model.encoder(self.image_matrix,
-                                                               is_train=True, reuse=False)
+                                                               is_train=True,
+                                                               reuse=False)
 
         # Sample the latent space using a normal distribution (samples)
         samples = tf.random_normal(tf.shape(self.z_mean), 0., 1., dtype=tf.float32)
@@ -50,20 +58,23 @@ class VAEModel():
 
         # Pass the sampled z into the decoder network
         self.decoder_output = self.model.decoder(self.guessed_z,
-                                                 is_train=True, reuse=False)
-
+                                                 is_train=True,
+                                                 reuse=False)
 
         # =================================================================================
         # ============== MODEL STRUCTURE TEST ============================================
         # =================================================================================
-
         z_mean_valid, z_std_valid, self.res_test = self.model.encoder(self.image_matrix,
-                                                                      is_train=False, reuse=True)
+                                                                      is_train=False,
+                                                                      reuse=True)
 
         samples_valid = tf.random_normal(tf.shape(z_mean_valid), 0., 1., dtype=tf.float32)
+        
         guessed_z_valid = z_mean_valid + z_std_valid*samples_valid
-        self.decoder_output_test = self.model.decoder(guessed_z_valid, is_train=False, reuse=True)
-
+        
+        self.decoder_output_test = self.model.decoder(guessed_z_valid,
+                                                      is_train=False,
+                                                      reuse=True)
 
         # =================================================================================
         # ============== LOSS SETUP TRAIN =================================================
@@ -82,7 +93,6 @@ class VAEModel():
         # Assemple the different loss terms into our final loss objective function
         self.loss = tf.reduce_mean(100.*self.autoencoder_loss + self.weight*self.latent_loss)
 
-
         # =================================================================================
         # ============== LOSS SETUP TEST =================================================
         # =================================================================================
@@ -99,11 +109,10 @@ class VAEModel():
         This method initializes the tensorflow graph and model.
         """
 
-        with tf.device("/gpu:0"):
-            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-            with tf.control_dependencies(update_ops):
-                self.train_op = tf.train.AdamOptimizer(self.config["lr"]).minimize(self.loss)
-                self.train_op = tf.group([self.train_op, update_ops])
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss)
+            self.train_op = tf.group([self.train_op, update_ops])
         self.sess.run(tf.initializers.global_variables())
 
     def summarize(self):
@@ -190,17 +199,17 @@ class VAEModel():
             path = model_name + 'test_difference_' + str(ep) + '_' + str(channel_map[channel]) + '.png'
             plot_batch_3d(X=np.abs(self.input_images_test - self.out_mu_test),channel= channel, every_x_time_step = every_x_time_step, out_path=path)
 
-    def save(self,model_name, ep):
-        if not os.path.exists(os.path.join(self.log_dir, model_name)):
-            os.makedirs(os.path.join(self.log_dir, model_name))
-        self.saver.save(self.sess, os.path.join(self.log_dir, model_name)+'/' + model_name + ".ckpt", global_step=ep)
+    def save(self, ep):
+        if not os.path.exists(os.path.join(self.log_dir)):
+            os.makedirs(os.path.join(self.log_dir))
+        self.saver.save(self.sess, self.log_dir +'/models/model.ckpt', global_step=ep)
 
     def load(self, model_name, step):
         model_folder = os.path.join(self.log_dir, model_name)
         self.saver.restore(self.sess, model_folder + '/' + model_name + ".ckpt-" + str(step))
 
-    def load_from_path(self, path, model_name, step):
-        self.saver.restore(self.sess, path + '/' + model_name + ".ckpt-" + str(step))
+    def load_from_path(self, path):
+        self.saver.restore(self.sess, path)
 
     def sample(self):
         """
@@ -208,10 +217,10 @@ class VAEModel():
         This function samples from the latent space and then computes the output of the decoder.
         """
         # z = np.random.normal(0,1,(4,9,7,3,256))
-        z = np.random.normal(0,1,(self.config["batch_size"],
-                                  self.config["latent_x"],
-                                  self.config["latent_y"],
-                                  self.config["latent_t"],256))
+        z = np.random.normal(0,1,(self.config.batch_size,
+                                  self.config.latent_size[0],
+                                  self.config.latent_size[1],
+                                  self.config.latent_size[2],256))
 
         feed_dict = {self.guessed_z: z}
         self.samples = self.sess.run(self.decoder_output, feed_dict)
