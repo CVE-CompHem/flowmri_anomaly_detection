@@ -65,17 +65,18 @@ def run_inference():
     # log experiment details
     # ============================
     logging.info('============================================================')
-    logging.info('================ EXPERIMENT NAME: %s ================' % exp_config.model_name)
+   # logging.info('================ EXPERIMENT NAME: %s ================' % exp_config.model_name)
     logging.info('================ Detecting anomaly for this image: %s ================' % args.inference_input)
 
     # ============================
     # load saved checkpoint file, if available
     # ============================
     logging.info('================ Looking for saved segmentation model... ')
-    model_iter = 2000
-    logging.info('args.training_output: ' + args.training_output + exp_config.model_name + '/models/model.ckpt-' + str(model_iter))
-    if os.path.exists(args.training_output + exp_config.model_name + '/models/model.ckpt-' + str(model_iter) + '.index'):
-        best_model_checkpoint_path = args.training_output + exp_config.model_name + '/models/model.ckpt-' + str(model_iter)
+   # model_iter = 2000
+    #logging.info('args.training_output: ' + args.training_output + exp_config.model_name + '/models/model.ckpt-' + str(model_iter))
+    if os.path.exists(args.training_output + '/model.ckpt-2000'+ '.index'):
+    #    best_model_checkpoint_path = args.training_output + exp_config.model_name + '/models/model.ckpt-' + str(model_iter)
+        best_model_checkpoint_path = args.training_output + '/model.ckpt-2000'
         logging.info('Found saved model at %s. This will be used for predicted the segmentation.' % best_model_checkpoint_path)
     else:
         logging.warning('Did not find a saved model. First need to run training successfully...')
