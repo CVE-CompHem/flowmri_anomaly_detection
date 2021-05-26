@@ -24,7 +24,7 @@ from models.vae import VAEModel
 current_dir_path = os.getcwd()
 mr_io_dir_path = current_dir_path[:-25] + 'hpc-predict-io/python/'
 sys.path.append(mr_io_dir_path)
-from mr_io import SegmentedFlowMRI
+from mr_io import SegmentedFlowMRI, AnomalySegmentedFlowMRI
 
 # ==================================================================
 # import and setup logging
@@ -131,20 +131,38 @@ def run_inference():
         logging.info('shape of reconstruction error after cropping back to original size: ' + str(reconstructed_image.shape))
         
         # ============================
-        # create an instance of the SegmentedFlowMRI class, with the image information from flow_mri as well as the predicted anomaly probabilities
+        # Compute the abnormality probability from the reconstruction error
         # ============================
-        anomalous_flow_mri = SegmentedFlowMRI(segmentedflow_mri.geometry,
-                                              segmentedflow_mri.time,
-                                              segmentedflow_mri.time_heart_cycle_period,
-                                              reconstructed_image[:,:,:,:,0],
-                                              reconstructed_image[:,:,:,:,1:4],
-                                              segmentedflow_mri.velocity_cov,
-                                              segmentedflow_mri.segmentation_prob)
+        # 1. Set the segmentation probabilities and round it to get a binary segmentation mask
+        segmentation = np.expand_dims(segmentedflow_mri.segmentation_prob, -1)
+        segmentation_binary = np.round(segmentation)
+        segmentation_binary_tiled = np.tile(segmentation_binary, (1, 1, 1, 1, 4))
+
+        # 2. Mask the image and the VAE reconstructed image with the segmentation mask
+        segmentedflow_mri_image_masked = segmentation_binary_tiled * segmentedflow_mri_image
+        reconstructed_image_masked = segmentation_binary_tiled * reconstructed_image
+
+        # 3. compute the anomaly as the reconstruction error inside the masked aorta
+        reconstruction_error = reconstructed_image_masked - segmentedflow_mri_image_masked
+        reconstruction_error_rmse_along_channels = np.sqrt(np.sum(np.square(reconstruction_error), -1))
+        anomaly_probability = reconstruction_error_rmse_along_channels / (np.max(reconstruction_error_rmse_along_channels) + 1e-5)
+
+        # ============================
+        # create an instance of the AnomalySegmentedFlowMRI class, with the image information from flow_mri as well as the predicted anomaly probabilities
+        # ============================
+        anomalous_flow_mri = AnomalySegmentedFlowMRI(segmentedflow_mri.geometry,
+                                                     segmentedflow_mri.time,
+                                                     segmentedflow_mri.time_heart_cycle_period,
+                                                     segmentedflow_mri.intensity,
+                                                     segmentedflow_mri.velocity_mean,
+                                                     segmentedflow_mri.velocity_cov,
+                                                     segmentedflow_mri.segmentation_prob,
+                                                     anomaly_probability)
 
         # ============================
         # write SegmentedFlowMRI to file
         # ============================
-        logging.info('================ Writing SegmentedFlowMRI to: ' + args.inference_output)
+        logging.info('================ Writing AnomalySegmentedFlowMRI to: ' + args.inference_output)
         anomalous_flow_mri.write_hdf5(args.inference_output)
         logging.info('============================================================')
 
