@@ -5,9 +5,10 @@
 set -x
 
 HPC_PREDICT_DATA_DIR=$(realpath $1)
-ANOMALY_DETECTION_TRAINING_DIR=$2 # e.g. training (pre trained model)
-SEGMENTER_INFERENCE_DIR=$3 # e.g. 2021-01-28_22-45-08_daint102/output/kspc_R16_volN7_vn.mat_segmented.h5 (output directory of cnn segmenter)
+ANOMALY_DETECTION_TRAINING_DIR=$2 # e.g. 2021-05-31_13-34-40_copper_flownet
+SEGMENTER_INFERENCE_INPUT=$3 # e.g. 2021-01-28_22-45-08_daint102_volN7_R16/output/kspc_R16_volN7_vn.mat_segmented.h5 (output directory of cnn segmenter)
 
+#TODO: Change time_stamp_host so that it indicates data belongs to which voluteer/patient under which undersampling ratio such as 
 if [ "$#" -eq 4 ]; then
     time_stamp_host="$4"
 else
@@ -91,14 +92,14 @@ shell_command_container=$(printf "%s" \
 	"--inference_output \"${container_output_directory}/$(echo $(basename ${container_input_file}) | sed -e 's/_segmented.h5/_segmented_anomaly.h5/')\" ")
 
 # For docker, use the following shell_command
-#shell_command=$(printf "%s" \
- #   " ${MAIN_REPO_RELATIVE}/data/container_scripts/run_docker_or_sarus.sh docker run --rm -u \$(id -u \${USER}):\$(id -g \${USER}) --gpus all -v \$(pwd)/${DATA_DIR_RELATIVE}/${decrypt_dir}:/hpc-predict-data --entrypoint bash \"\${HPC_PREDICT_SEGMENTER_IMAGE:-cscs-ci/hpc-predict/segmenter/deploy}\" " \
-  #  " -c '${shell_command_container}'")
+shell_command=$(printf "%s" \
+   " ${MAIN_REPO_RELATIVE}/data/container_scripts/run_docker_or_sarus.sh docker run --rm -u \$(id -u \${USER}):\$(id -g \${USER}) --gpus all -v \$(pwd)/${DATA_DIR_RELATIVE}/${decrypt_dir}:/hpc-predict-data --entrypoint bash \"\${HPC_PREDICT_SEGMENTER_IMAGE:-cscs-ci/hpc-predict/segmenter/deploy}\" " \
+   " -c '${shell_command_container}'")
 
 # For singularity, use the following shell_command. Adjust your hpc-predict-data directory and segmenter.img path accordingly.
 
-shell_command=$(printf "%s" \
-	" singularity exec --nv -B "/scratch/hharputlu/hpc-predict/data/v1/decrypt:/hpc-predict-data" "/scratch/hharputlu/hpc-predict/anomaly_detection.img"  bash -c '${shell_command_container}' ")
+#shell_command=$(printf "%s" \
+#	" singularity exec --nv -B "/scratch-second/hpc-predict/data/v1/decrypt:/hpc-predict-data" "/scratch-second/hpc-predict/anomaly_detection.img"  bash -c '${shell_command_container}' ")
 
 set -x
 

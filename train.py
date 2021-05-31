@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 # ===================================
 # Set the logging directory
 # ===================================
-log_dir = args.training_output + exp_config.model_name
+log_dir = args.training_output + "/" + exp_config.model_name
 logging.info('Logging directory: %s' %log_dir)
 
 # ==================================================================

@@ -5,7 +5,7 @@ set -euo pipefail
 HPC_PREDICT_ANOMALY_DETECTION_IMAGE=${HPC_PREDICT_ANOMALY_DETECTION_IMAGE:-'cscs-ci/hpc-predict/anomaly_detection/deploy'}
 HPC_PREDICT_DATA_DIR=$(realpath $1)
 TRAINING_INPUT=$(realpath $2)
-TRAINING_OUTPUt=$(realpath $3)
+TRAINING_OUTPUT=$(realpath $3)
 
 if [ "$#" -eq 4 ]; then
     time_stamp_host="$4"
