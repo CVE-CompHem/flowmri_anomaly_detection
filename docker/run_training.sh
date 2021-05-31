@@ -34,7 +34,7 @@ echo "Host output directory: \"${host_output_directory}\""
 shell_command=$(printf "%s" \
     "source /src/hpc-predict/flowmri_anomaly_detection/venv/bin/activate && " \
     "PYTHONPATH=/src/hpc-predict/flowmri_anomaly_detection:/src/hpc-predict/hpc-predict-io/python python3 -u " \
-    "/src/hpc-predict/flowmri_anomaly_detection/train.py " \
+/Users/hande     "/src/hpc-predict/flowmri_anomaly_detection/train.py " \
     "--training_input \"${container_training_directory}\" " \
     "--training_output \"${container_output_directory}\" ")
 

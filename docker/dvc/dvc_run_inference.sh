@@ -93,10 +93,10 @@ shell_command_container=$(printf "%s" \
 
 # For docker, use the following shell_command
 shell_command=$(printf "%s" \
-   " ${MAIN_REPO_RELATIVE}/data/container_scripts/run_docker_or_sarus.sh docker run --rm -u \$(id -u \${USER}):\$(id -g \${USER}) --gpus all -v \$(pwd)/${DATA_DIR_RELATIVE}/${decrypt_dir}:/hpc-predict-data --entrypoint bash \"\${HPC_PREDICT_SEGMENTER_IMAGE:-cscs-ci/hpc-predict/segmenter/deploy}\" " \
+   " ${MAIN_REPO_RELATIVE}/data/container_scripts/run_docker_or_sarus.sh docker run --rm -u \$(id -u \${USER}):\$(id -g \${USER}) --gpus all -v \$(pwd)/${DATA_DIR_RELATIVE}/${decrypt_dir}:/hpc-predict-data --entrypoint bash \"\${HPC_PREDICT_ANOMALY_DETECTION_IMAGE:-cscs-ci/hpc-predict/anomaly_detection/deploy}\" " \
    " -c '${shell_command_container}'")
 
-# For singularity, use the following shell_command. Adjust your hpc-predict-data directory and segmenter.img path accordingly.
+# For singularity, use the following shell_command. Adjust your hpc-predict-data directory and anomaly_detection.img path accordingly.
 
 #shell_command=$(printf "%s" \
 #	" singularity exec --nv -B "/scratch-second/hpc-predict/data/v1/decrypt:/hpc-predict-data" "/scratch-second/hpc-predict/anomaly_detection.img"  bash -c '${shell_command_container}' ")
