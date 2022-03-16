@@ -13,7 +13,7 @@ plt.rcParams.update({'font.size': 10})
 current_dir_path = os.getcwd()
 mr_io_dir_path = current_dir_path[:-25] + 'hpc-predict-io/python/'
 sys.path.append(mr_io_dir_path)
-from mr_io import FlowMRI, SegmentedFlowMRI, AnomalySegmentedFlowMRI
+from hpc_predict_io.mr_io import FlowMRI, SegmentedFlowMRI, AnomalySegmentedFlowMRI
 
 def norm(x,y,z):
     normed_array = np.sqrt(np.square(x)+np.square(y)+np.square(z))

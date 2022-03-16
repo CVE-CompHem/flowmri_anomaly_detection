@@ -85,7 +85,7 @@ shell_command_container=$(printf "%s" \
     "mkdir -p \"${container_output_directory}\" && " \
     "cd /src/hpc-predict/flowmri_anomaly_detection && " \
     "LD_LIBRARY_PATH=/usr/local/cuda/lib64 " \
-    "PYTHONPATH=/src/hpc-predict/flowmri_anomaly_detection:/src/hpc-predict/hpc-predict-io/python python3 " \
+    "PYTHONPATH=/src/hpc-predict/flowmri_anomaly_detection python3 " \
         "inference.py " \
         "--training_output \"${container_model_directory}/\" " \
         "--inference_input \"${container_input_file}\" " \

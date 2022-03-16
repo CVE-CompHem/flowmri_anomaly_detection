@@ -12,6 +12,8 @@ RUN bash -c "cd /src/hpc-predict/flowmri_anomaly_detection \
     && python3 -m venv venv \
     && source venv/bin/activate \
     && pip install --upgrade pip \
+    && pip install ../hpc-predict-io/python/ \
+    && ../hpc-predict-io/python/post_install.sh \
     && pip install -r requirements.txt"
 
 #VOLUME ["/hpc-predict-data"]

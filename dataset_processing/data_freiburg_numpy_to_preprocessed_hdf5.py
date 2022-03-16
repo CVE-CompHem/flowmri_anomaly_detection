@@ -26,7 +26,7 @@ import os, sys
 current_dir_path = os.getcwd()
 mr_io_dir_path = current_dir_path[:-44] + 'hpc-predict-io/python/'
 sys.path.append(mr_io_dir_path)
-from mr_io import SegmentedFlowMRI
+from hpc_predict_io.mr_io import SegmentedFlowMRI
 
 # ==========================================
 # function to normalize the input arrays (intensity and velocity) to a range between 0 to 1.

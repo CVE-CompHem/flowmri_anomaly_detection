@@ -60,7 +60,7 @@ shell_command_container=$(printf "%s" \
     "mkdir -p \"${container_output_directory}\" && " \
     "cd /src/hpc-predict/segmenter/cnn_segmenter_for_mri_4d_flow && " \
     "LD_LIBRARY_PATH=/usr/local/cuda/lib64 " \
-    "PYTHONPATH=/src/hpc-predict/segmenter/cnn_segmenter_for_mri_4d_flow:/src/hpc-predict/hpc-predict-io/python python3 " \
+    "PYTHONPATH=/src/hpc-predict/segmenter/cnn_segmenter_for_mri_4d_flow python3 " \
     "data_flownet_prepare_training_data.py \"${container_work_directory}\" ")
 
 # For docker, use the following shell_command

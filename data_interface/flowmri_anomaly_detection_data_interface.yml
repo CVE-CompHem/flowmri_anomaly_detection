@@ -1,0 +1,9 @@
+app: flowmri_anomaly_detection
+
+inference: 
+
+  input: 
+    flow_CStest_Volunteer_R4_segmented.h5: hpc_predict_io.mr_io.SegmentedFlowMRI
+
+  output: 
+    flow_CStest_Volunteer_R4_segmented_anomaly_detected.h5: hpc_predict_io.mr_io.AnomalySegmentedFlowMRI

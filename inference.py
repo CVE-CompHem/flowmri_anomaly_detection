@@ -24,7 +24,7 @@ from models.vae import VAEModel
 current_dir_path = os.getcwd()
 mr_io_dir_path = current_dir_path[:-25] + 'hpc-predict-io/python/'
 sys.path.append(mr_io_dir_path)
-from mr_io import SegmentedFlowMRI, AnomalySegmentedFlowMRI
+from hpc_predict_io.mr_io import SegmentedFlowMRI, AnomalySegmentedFlowMRI
 
 # ==================================================================
 # import and setup logging

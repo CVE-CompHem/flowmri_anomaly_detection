@@ -14,7 +14,7 @@ container_work_directory="/hpc-predict-data/${relative_work_directory}"
 
 shell_command=$(printf "%s" \
     "source /src/hpc-predict/segmenter/random_walker_segmenter_for_mri_4d_flow/venv/bin/activate && " \
-    "PYTHONPATH=/src/hpc-predict/segmenter/random_walker_segmenter_for_mri_4d_flow:/src/hpc-predict/hpc-predict-io/python python3 " \
+    "PYTHONPATH=/src/hpc-predict/segmenter/random_walker_segmenter_for_mri_4d_flow python3 " \
     "/src/hpc-predict/segmenter/cnn_segmenter_for_mri_4d_flow/data_flownet_prepare_training_data.py \"${container_work_directory}\" ")
 
 set -x
